@@ -28,6 +28,8 @@
    that are ready to run but not actually running. */
 static struct list ready_list;
 
+static struct list sleep_list;
+
 /* Idle thread. */
 static struct thread *idle_thread;
 
@@ -108,6 +110,7 @@ thread_init (void) {
 	/* Init the globla thread context */
 	lock_init (&tid_lock);
 	list_init (&ready_list);
+	list_init (&sleep_list);
 	list_init (&destruction_req);
 
 	/* Set up a thread structure for the running thread. */
@@ -131,6 +134,41 @@ thread_start (void) {
 
 	/* Wait for the idle thread to initialize idle_thread. */
 	sema_down (&idle_started);
+}
+
+void 
+thread_sleep (int64_t ticks) {
+	struct thread *current_thread = thread_current ();
+	enum intr_level old_level;
+
+	old_level = intr_disable (); 		
+
+	ASSERT(current_thread != idle_thread);
+	
+	current_thread->wake_up_tick = ticks;
+	list_push_back (&sleep_list, &current_thread->elem);	
+	thread_block ();
+
+	intr_set_level (old_level);
+}
+
+void 
+thread_wakeup (int64_t current_ticks) {
+	enum intr_level old_level;
+	old_level = intr_disable ();
+
+	struct list_elem *e = list_begin (&sleep_list);
+
+	while (e != list_end (&sleep_list)) {
+        struct thread *t = list_entry (e, struct thread, elem);
+        if (t->wake_up_tick <= current_ticks) {
+            e = list_remove (e);
+            thread_unblock (t);
+        } else {
+            e = list_next (e);
+        }
+    }
+	intr_set_level (old_level);
 }
 
 /* Called by the timer interrupt handler at each timer tick.
@@ -216,8 +254,10 @@ thread_create (const char *name, int priority,
    This function must be called with interrupts turned off.  It
    is usually a better idea to use one of the synchronization
    primitives in synch.h. */
+
 void
 thread_block (void) {
+
 	ASSERT (!intr_context ());
 	ASSERT (intr_get_level () == INTR_OFF);
 	thread_current ()->status = THREAD_BLOCKED;
@@ -240,10 +280,12 @@ thread_unblock (struct thread *t) {
 
 	old_level = intr_disable ();
 	ASSERT (t->status == THREAD_BLOCKED);
-	list_push_back (&ready_list, &t->elem);
+	list_push_back (&ready_list, &t->elem);    
 	t->status = THREAD_READY;
 	intr_set_level (old_level);
 }
+
+
 
 /* Returns the name of the running thread. */
 const char *
