@@ -193,12 +193,13 @@ lock_init (struct lock *lock) {
    interrupt handler.  This function may be called with
    interrupts disabled, but interrupts will be turned back on if
    we need to sleep. */
-void
-lock_acquire (struct lock *lock) {
-	ASSERT (lock != NULL);
-	ASSERT (!intr_context ());
-	ASSERT (!lock_held_by_current_thread (lock));
+void 
+lock_acquire(struct lock *lock) {
+    ASSERT(lock != NULL);
+    ASSERT(!intr_context());
+    ASSERT(!lock_held_by_current_thread(lock));
 
+<<<<<<< HEAD
 	// For mlfqs
 	// If mlfqs is enabled, forbid logics for priority donation
 	if (thread_mlfqs) {
@@ -222,6 +223,24 @@ lock_acquire (struct lock *lock) {
 	// Update lock_waiting to NULL
 	thread_current ()->lock_waiting = NULL;
 	lock->holder = thread_current ();
+=======
+    if (thread_mlfqs) {
+        // mlfqs 스케줄러를 사용할 때는 priority donation 사용 금지
+        sema_down(&lock->semaphore);
+        lock->holder = thread_current();
+    } else {
+        // priority donation을 사용하는 경우
+        if (lock->holder) {
+            thread_current()->lock_waiting = lock;
+            list_insert_ordered(&lock->holder->donor_list, &thread_current()->d_elem, &cmp_priority_greater_dona, NULL);
+            thread_donate_priority();
+        }
+
+        sema_down(&lock->semaphore);
+        thread_current()->lock_waiting = NULL;
+        lock->holder = thread_current();
+    }
+>>>>>>> origin/kim5606
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
@@ -249,6 +268,7 @@ lock_try_acquire (struct lock *lock) {
    An interrupt handler cannot acquire a lock, so it does not
    make sense to try to release a lock within an interrupt
    handler. */
+<<<<<<< HEAD
 void
 lock_release (struct lock *lock) {
 	ASSERT (lock != NULL);
@@ -265,9 +285,25 @@ lock_release (struct lock *lock) {
 	// If lock is released, remove lock_waiting thread from donor_list and update priority of current thread
 	thread_remove_donor (lock);
 	thread_update_priority ();
+=======
+void 
+lock_release(struct lock *lock) {
+    ASSERT(lock != NULL);
+    ASSERT(lock_held_by_current_thread(lock));
+>>>>>>> origin/kim5606
 
-	lock->holder = NULL;
-	sema_up (&lock->semaphore);
+    if (thread_mlfqs) {
+        // mlfqs 스케줄러를 사용할 때는 priority donation 사용 금지
+        lock->holder = NULL;
+        sema_up(&lock->semaphore);
+    } else {
+        // priority donation을 사용하는 경우
+        thread_remove_donor(lock);
+        thread_update_priority();
+
+        lock->holder = NULL;
+        sema_up(&lock->semaphore);
+    }
 }
 
 /* Returns true if the current thread holds LOCK, false
@@ -377,7 +413,11 @@ cond_broadcast (struct condition *cond, struct lock *lock) {
 // returns true if t1->priority is greater than t2->priority
 // similar in logic to cmp_priority_greater in thread.c, but adapted for use with struct 'semaphore_elem'.
 bool 
+<<<<<<< HEAD
 cmp_priority_greater_sema (struct list_elem *e1, struct list_elem *e2) {
+=======
+cmp_priority_greater_sema (const struct list_elem *e1, const struct list_elem *e2) {
+>>>>>>> origin/kim5606
 	struct semaphore_elem *s_e1 = list_entry (e1, struct semaphore_elem, elem);
 	struct semaphore_elem *s_e2 = list_entry (e2, struct semaphore_elem, elem);
 	struct list *l1 = &s_e1->semaphore.waiters;

@@ -11,7 +11,11 @@
 #include "threads/synch.h"
 #include "threads/vaddr.h"
 #include "intrinsic.h"
+<<<<<<< HEAD
 #include "lib/fixed.h"	// Privately added
+=======
+#include "fixed_point.h"	// Privately added
+>>>>>>> origin/kim5606
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
@@ -197,6 +201,8 @@ thread_create (const char *name, int priority,
 	struct thread *t;
 	tid_t tid;
 
+	
+
 	ASSERT (function != NULL);
 
 	/* Allocate thread. */
@@ -207,6 +213,8 @@ thread_create (const char *name, int priority,
 	/* Initialize thread. */
 	init_thread (t, name, priority);
 	tid = t->tid = allocate_tid ();
+
+	
 
 	/* Call the kernel_thread if it scheduled.
 	 * Note) rdi is 1st argument, and rsi is 2nd argument. */
@@ -386,7 +394,11 @@ thread_try_preemption (void) {
 
 	// Ensure that ready_list is sorted by priority before popping thread from ready_list
 	list_sort (&ready_list, &cmp_priority_greater, NULL);
+<<<<<<< HEAD
 	if (thread_current ()->priority < list_entry (list_front(&ready_list), struct thread, elem)->priority)
+=======
+	if (!intr_context () && thread_current ()->priority < list_entry (list_front(&ready_list), struct thread, elem)->priority)
+>>>>>>> origin/kim5606
 		thread_yield ();
 }
 

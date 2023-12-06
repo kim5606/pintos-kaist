@@ -38,7 +38,12 @@ void cond_wait (struct condition *, struct lock *);
 void cond_signal (struct condition *, struct lock *);
 void cond_broadcast (struct condition *, struct lock *);
 
+<<<<<<< HEAD
 bool cmp_priority_greater_sema (struct list_elem *e1, struct list_elem *e2);	// privately added
+=======
+bool
+cmp_priority_greater_sema (const struct list_elem *e1, const struct list_elem *e2);	// privately added
+>>>>>>> origin/kim5606
 
 /* Optimization barrier.
  *

@@ -1,0 +1,58 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "save and compile for C++",
+      "type": "shell",
+      "command": "g++",
+      "args": ["${file}", "-o", "${fileDirname}/${fileBasenameNoExtension}"],
+      "group": {
+        "kind": "build"
+      },
+      "problemMatcher": {
+        "fileLocation": ["relative", "${workspaceRoot}"],
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      }
+    },
+    {
+      "label": "save and compile for C",
+      "type": "shell",
+      "command": "gcc",
+      "args": ["${file}", "-o", "${fileDirname}/${fileBasenameNoExtension}"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": {
+        "fileLocation": ["relative", "${workspaceRoot}"],
+        "pattern": {
+          "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "severity": 4,
+          "message": 5
+        }
+      }
+    },
+    {
+      "label": "execute",
+      "type": "shell",
+      "command": "cmd",
+      "args": ["/C", "${fileDirname}\\${fileBasenameNoExtension}.exe"],
+      "dependsOn": ["save and compile for C"],
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    }
+  ]
+}

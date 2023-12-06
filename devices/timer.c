@@ -148,6 +148,22 @@ timer_interrupt (struct intr_frame *args UNUSED) {
 			thread_recalc_priority_all ();
 	}
 	thread_tick ();
+	// When a timer interrupt occurs, wake up threads in sleep_list if their 'local ticks' is expired
+	thread_wakeup (ticks);
+
+	// For mlfqs
+	if (thread_mlfqs) {
+		// Incrememnt recent_cpu of current thread per timer tick
+		mlfqs_increment();
+		// Recalculate load_avg, recent_cpu every 1 sec(= TIMER FREQ ticks)
+		if (ticks % TIMER_FREQ == 0) {
+			mlfqs_load_avg ();
+			mlfqs_recalc_recent_cpu();
+		}
+		// Recalculate priority for all threads every 4th tick
+		if (ticks % 4 == 0)
+			mlfqs_recalc_priority();
+	}
 }
 
 /* Returns true if LOOPS iterations waits for more than one timer

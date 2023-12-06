@@ -1,0 +1,18 @@
+{
+  "files.associations": {
+    "string.h": "c",
+    "process.h": "c",
+    "list.h": "c",
+    "stdio.h": "c",
+    "fixed_point.h": "c",
+    "intrinsic.h": "c",
+    "vaddr.h": "c",
+    "synch.h": "c",
+    "palloc.h": "c",
+    "intr-stubs.h": "c",
+    "flags.h": "c",
+    "stddef.h": "c",
+    "thread.h": "c",
+    "interrupt.h": "c"
+  }
+}

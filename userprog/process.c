@@ -50,6 +50,8 @@ process_create_initd (const char *file_name) {
 		return TID_ERROR;
 	strlcpy (fn_copy, file_name, PGSIZE);
 
+
+
 	/* Create a new thread to execute FILE_NAME. */
 	tid = thread_create (file_name, PRI_DEFAULT, initd, fn_copy);
 	if (tid == TID_ERROR)
@@ -179,8 +181,9 @@ process_exec (void *f_name) {
 	/* And then load the binary */
 	success = load (file_name, &_if);
 
+	hex_dump(_if.rsp, _if.rsp, KERN_BASE - _if.rsp, true);
 	/* If load failed, quit. */
-	palloc_free_page (file_name);
+	// palloc_free_page (file_name);
 	if (!success)
 		return -1;
 
@@ -189,6 +192,44 @@ process_exec (void *f_name) {
 	NOT_REACHED ();
 }
 
+void argument_stack (char **argv, int argc, struct intr_frame *if_) {
+	char *arg_add[128];
+	int i;
+
+	// ARGV ~~~~ 윗 부분 
+
+	for (i = argc -1 ;  i >= 0; i--) {
+		int arg_i_len = strlen(argv[i]) + 1; // NULL 포함 !! 
+		if_->rsp = if_->rsp - (arg_i_len);
+		memcpy(if_ -> rsp, argv[i], arg_i_len);
+		arg_add[i] = if_->rsp; 
+	}																	
+
+	// WORD - ALIGN
+
+	if (if_->rsp % 8 != 0) {
+		if_->rsp--;
+		*(uint8_t *) if_->rsp = 0;
+	}
+
+	// ARGV ~~~ 밑 부분
+
+	for (i = argc -1 ;  i >= 0; i--) {
+		if_->rsp = if_->rsp - 8;
+		if(i=argc)
+			memset(if_->rsp, 0, sizeof(char **));
+		else
+			memcpy(if_->rsp, &arg_add[i], sizeof(char **));
+	}																	
+
+	// rdi, rsi 세팅
+	if_->R.rdi = argc; // R 존재 유의!
+	if_->R.rsi = if_->rsp; // R 존재 유의!
+
+	// fake address 
+	if_->rsp = if_->rsp - 8;
+	memset(if_->rsp, 0, sizeof(void *));
+}
 
 /* Waits for thread TID to die and returns its exit status.  If
  * it was terminated by the kernel (i.e. killed due to an
@@ -204,6 +245,7 @@ process_wait (tid_t child_tid UNUSED) {
 	/* XXX: Hint) The pintos exit if process_wait (initd), we recommend you
 	 * XXX:       to add infinite loop here before
 	 * XXX:       implementing the process_wait. */
+	while (1){} // 임시
 	return -1;
 }
 
@@ -416,9 +458,19 @@ load (const char *file_name, struct intr_frame *if_) {
 
 	/* TODO: Your code goes here.
 	 * TODO: Implement argument passing (see project2/argument_passing.html). */
+	char *argv[128];
+	char *token, *sav_ptr;
+	int token_count = 0;
 
-	success = true;
+	token = strtok_r(file_name, " ", &sav_ptr);
+	argv[token_count] = token;
 
+	while(token!=NULL){
+		token = strtok_r(NULL, " ", &sav_ptr);
+		token_count++;
+		argv[token_count] = token;
+	}
+	
 done:
 	/* We arrive here whether the load is successful or not. */
 	file_close (file);
