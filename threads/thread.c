@@ -11,7 +11,7 @@
 #include "threads/synch.h"
 #include "threads/vaddr.h"
 #include "intrinsic.h"
-#include "lib/fixed.h"	// Privately added
+// #include "lib/fixed.h"	// Privately added
 #ifdef USERPROG
 #include "userprog/process.h"
 #endif
