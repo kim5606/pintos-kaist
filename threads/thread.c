@@ -834,7 +834,7 @@ allocate_tid (void) {
 
 // Given list elem e1 and e2, returns true if t1->priority is greater than t2->priority
 bool 
-cmp_priority_greater (struct list_elem *e1, struct list_elem *e2) {
+cmp_priority_greater (struct list_elem *e1, struct list_elem *e2, void *aux) {
 	struct thread *t1 = list_entry (e1, struct thread, elem);
 	struct thread *t2 = list_entry (e2, struct thread, elem);
 	return (t1->priority > t2->priority);
@@ -843,7 +843,7 @@ cmp_priority_greater (struct list_elem *e1, struct list_elem *e2) {
 // Given list elem e1 and e2, returns true if t1->priority is greater than t2->priority
 // Adpated for 'donor_list' and 'd_elem'
 bool
-cmp_priority_greater_dona (struct list_elem *e1, struct list_elem *e2) {
+cmp_priority_greater_dona (struct list_elem *e1, struct list_elem *e2,  void *aux) {
 	struct thread *t1 = list_entry (e1, struct thread, d_elem);
 	struct thread *t2 = list_entry (e2, struct thread, d_elem);
 	return (t1->priority > t2->priority);
