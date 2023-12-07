@@ -50,6 +50,37 @@
           }
         }
       ]
+    },
+    {
+      "label": "dbg_pintos",
+      "type": "shell",
+      "command": ["${workspaceFolder}/utils/pintos"],
+      "args": ["--gdb", "--", "-q", "run", "${input:test}"],
+      "options": {
+        "cwd": "${workspaceFolder}/${input:project}/build"
+      },
+      "dependsOn": ["build_pintos"],
+      "isBackground": true,
+      // problem matcher hack
+      // If vscode starts supporting features in the future
+      // that prevent it from waiting for preLaunchTask to complete, delete this code.
+      "problemMatcher": [
+        {
+          "pattern": [
+            {
+              "regexp": ".",
+              "file": 1,
+              "location": 2,
+              "message": 3
+            }
+          ],
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": ".",
+            "endsPattern": "."
+          }
+        }
+      ]
     }
   ],
   "inputs": [
@@ -63,6 +94,16 @@
       "description": "Enter the project to start.",
       "type": "pickString",
       "options": ["threads", "userprog", "filesys", "vm"]
+    },
+    {
+      "id": "filename",
+      "description": "Enter the user program to start.",
+      "type": "promptString"
+    },
+    {
+      "id": "args",
+      "description": "Enter arguments.",
+      "type": "promptString"
     }
   ]
 }
