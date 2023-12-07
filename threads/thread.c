@@ -201,6 +201,7 @@ struct thread *
 create_thread(const char *name, int priority,
 		thread_func *function, void *aux) {
 	struct thread *t;
+	struct kernel_thread_frame *kf;
 	tid_t tid;
 
 	ASSERT (function != NULL);
@@ -214,6 +215,8 @@ create_thread(const char *name, int priority,
 	init_thread (t, name, priority);
 	t->tid = allocate_tid ();
 
+	//kf = alloc_frame (t, sizeof *kf);
+
 	/* Call the kernel_thread if it scheduled.
 	 * Note) rdi is 1st argument, and rsi is 2nd argument. */
 	t->tf.rip = (uintptr_t) kernel_thread;
@@ -224,6 +227,11 @@ create_thread(const char *name, int priority,
 	t->tf.ss = SEL_KDSEG;
 	t->tf.cs = SEL_KCSEG;
 	t->tf.eflags = FLAG_IF;
+
+	// // P2_1 추가
+	// kf->eip = NULL;
+	// kf->function = function; 	/* 스레드가 수행할 함수 */
+	// kf->aux = aux;				/* 수행할 함수의 인자 */
 
 	/* Add to run queue. */
 	thread_unblock (t); // note : default value of newly initiated thread's status is BLOCKED
@@ -373,7 +381,7 @@ thread_yield (void) {
 	if (curr != idle_thread)
 		// for priority scheduling
 		// insertion strategy should be modified properly : maintain the ready queue in descending order of priority
-		list_insert_ordered (&ready_list, &(curr->elem), &cmp_priority_greater, NULL);
+		list_insert_ordered (&ready_list, &(curr->elem), cmp_priority_greater, NULL);
 		// list_push_back (&ready_list, &curr->elem);
 	do_schedule (THREAD_READY);
 	intr_set_level (old_level);
@@ -387,7 +395,7 @@ thread_try_preemption (void) {
 		return;
 
 	// Ensure that ready_list is sorted by priority before popping thread from ready_list
-	list_sort (&ready_list, &cmp_priority_greater, NULL);
+	list_sort (&ready_list, cmp_priority_greater, NULL);
 	if (!intr_context () && thread_current ()->priority < list_entry (list_front(&ready_list), struct thread, elem)->priority)
 		thread_yield ();
 }

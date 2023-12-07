@@ -145,7 +145,9 @@ const char *thread_name (void);
 
 void thread_exit (void) NO_RETURN;
 void thread_yield (void);
-
+struct thread *
+create_thread(const char *name, int priority,
+		thread_func *function, void *aux);
 void thread_try_preemption (void);	// privately added
 
 int thread_get_priority (void);
@@ -168,7 +170,7 @@ int thread_get_load_avg (void);
 
 void do_iret (struct intr_frame *tf);
 
-bool cmp_priority_greater (struct list_elem *e1, struct list_elem *e2); // privately added
-bool cmp_priority_greater_dona (struct list_elem *e1, struct list_elem *e2); // privately added
+bool cmp_priority_greater (struct list_elem *e1, struct list_elem *e2, void *aux); // privately added
+bool cmp_priority_greater_dona (struct list_elem *e1, struct list_elem *e2, void *aux); // privately added
 
 #endif /* threads/thread.h */
